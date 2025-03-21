@@ -38,7 +38,7 @@ const ServicesSection = () => {
 
   return (
     <section className="py-16 container mx-auto px-4">
-      <h2 className="text-3xl font-bold mx-auto mb-12 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-1/5 p-4 rounded-2xl border-4 border-pink-200 shadow-lg">
+      <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mx-auto mb-12 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 w-4/5 sm:w-3/5 md:w-2/5 lg:w-1/5 p-2 md:p-4 rounded-2xl border-4 border-pink-200 shadow-lg text-center">
   Our Services
 </h2>
 
