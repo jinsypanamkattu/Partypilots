@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { loginUser } from '../redux/slices/authSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Lock, Mail, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import UpcomimgEvents from "../components/UpcomingEvents";
 
 function Login() {
@@ -119,9 +120,9 @@ function Login() {
                         </div>
 
                         <div className="flex justify-between items-center">
-                            <a href="/forgot-password" className="text-sm text-[#789972] hover:text-[#5F7A64] transition duration-300">
+                            <Link to="/forgot-password" className="text-sm text-[#789972] hover:text-[#5F7A64] transition duration-300">
                                 Forgot Password?
-                            </a>
+                            </Link>
                         </div>
 
                         <button
@@ -139,10 +140,10 @@ function Login() {
                             <div className="h-px bg-gray-300 w-full"></div>
                         </div>
 
-                        <a href="/register" className="flex items-center justify-center w-full mt-4 p-3 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition duration-300">
+                        <Link to="/register" className="flex items-center justify-center w-full mt-4 p-3 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition duration-300">
                             <UserPlus className="mr-2" />
                             Create New Account
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
