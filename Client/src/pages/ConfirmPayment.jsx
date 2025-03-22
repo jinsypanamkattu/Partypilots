@@ -131,7 +131,7 @@ const ConfirmPayment = () => {
     }, []);
 
     return (
-        <Container maxWidth="sm" sx={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+        <Container maxWidth="sm" sx={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', my: '10px' }}>
             <Zoom in={true} timeout={1000}>
                 <Typography
                     variant="h2"
