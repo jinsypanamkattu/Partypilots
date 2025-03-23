@@ -46,7 +46,9 @@ exports.createPayment = async (req, res) => {
 exports.confirmPayment = async (req, res) => {
     console.log("Entered confirmPayment webhook");
     console.log("Headers:", req.headers);
-    console.log("Raw Body:", req.rawBody ? req.rawBody.toString() : "No raw body");
+    //console.log("Raw Body:", req.rawBody ? req.rawBody.toString() : "No raw body");
+    console.log("Body is Buffer:", Buffer.isBuffer(req.body));
+    console.log("Body length:", req.body ? req.body.length : 0);
 
     const sig = req.headers["stripe-signature"];
     if (!sig) {
@@ -55,7 +57,9 @@ exports.confirmPayment = async (req, res) => {
     }
 
     try {
-        const event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+        //const event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+        // Use req.body directly since it's a raw buffer when using express.raw middleware
+        const event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
         console.log("Webhook event verified:", event.type);
 
         // Handle both payment_intent.succeeded and charge.succeeded
