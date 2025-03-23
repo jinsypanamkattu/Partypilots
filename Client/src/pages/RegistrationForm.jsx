@@ -86,16 +86,7 @@ const RegistrationForm = () => {
                 <p className="text-gray-500 mb-6">Register to get started</p>
             </div>
 
-            {errorMsg && (
-                <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg text-center">
-                    {errorMsg}
-                </div>
-            )}
-            {successMessage && (
-                <div className="bg-green-50 border border-green-200 text-green-600 p-3 rounded-lg text-center">
-                    {successMessage}
-                </div>
-            )}
+           
 
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Profile Image Upload */}
@@ -197,6 +188,16 @@ const RegistrationForm = () => {
                     Register
                 </button>
             </form>
+            {errorMsg && (
+                <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg text-center">
+                    {errorMsg}
+                </div>
+            )}
+            {successMessage && (
+                <div className="bg-green-50 border border-green-200 text-green-600 p-3 rounded-lg text-center">
+                    {successMessage}
+                </div>
+            )}
         </div>
     </div>
 </div>
