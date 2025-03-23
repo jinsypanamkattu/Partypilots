@@ -29,17 +29,28 @@ function Login() {
                 //console.log('resultAction', resultAction);
 
                 if (loginUser.fulfilled.match(resultAction)) {
-                    const { user } = resultAction.payload;
+                    const { user } = resultAction.payload || {};
+                    const userRole = user?.role?.trim().toLowerCase(); // Normalize role
 
-                    if (user?.role === 'admin') {
-                        navigate('/dashboard/admin');
-                    } else if (user?.role === 'organizer') {
-                        navigate('/dashboard/organizer');
-                    } else if (user?.role === 'attendee') {
-                        navigate('/profile');
-                    } else {
-                        setErrorMsg('Invalid role, please try again.');
+                    if (!userRole) {
+                        setErrorMsg('User role is missing. Please try again.');
+                        return;
                     }
+                
+                    switch (userRole) {
+                        case 'admin':
+                            navigate('/dashboard/admin');
+                            break;
+                        case 'organizer':
+                            navigate('/dashboard/organizer');
+                            break;
+                        case 'attendee':
+                            navigate('/profile');
+                            break;
+                        default:
+                            setErrorMsg('Invalid role, please try again.');
+                    }
+                    
                 } else {
                     // Handle errors
                     const error = resultAction?.payload?.error;
