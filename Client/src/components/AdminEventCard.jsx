@@ -1,4 +1,4 @@
-const AdminEventCard = ({ event, onEdit, onDelete, index, onToggleActive }) => {
+const AdminEventCard = ({ event, onEdit, index, onToggleActive, onCancel }) => {
     return (
         <tr>
             <td className="border px-4 py-2 text-center">{index + 1}</td>
@@ -15,13 +15,30 @@ const AdminEventCard = ({ event, onEdit, onDelete, index, onToggleActive }) => {
             </td>
             <td className="border px-4 py-2 text-center">
                 <div className="flex items-center gap-2">
-                    <button className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"  onClick={onEdit}>Edit</button>
-                    
+                    <button
+                        className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={onEdit}
+                        disabled={event.status === 'Cancelled'}
+                    >
+                        Edit
+                    </button>
 
-
-                    <button onClick={() => onToggleActive(event)} className={`px-3 py-1 rounded ${event.state === 'active' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-red-500 hover:bg-red-600'} text-white`}>
+                    <button
+                        onClick={() => onToggleActive(event)}
+                        className={`px-3 py-1 rounded text-white ${event.state === 'active'
+                                ? 'bg-blue-500 hover:bg-blue-600'
+                                : 'bg-red-500 hover:bg-red-600'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        disabled={event.status === 'Cancelled'}
+                    >
                         {event.state === 'active' ? 'Deactivate' : 'Activate'}
                     </button>
+
+                    {event.status !== 'Cancelled' && (
+                        <button className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700" onClick={() => onCancel(event)}>
+                            Cancel Event
+                        </button>
+                    )}
                 </div>
             </td>
         </tr>
