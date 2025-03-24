@@ -9,7 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 5005;
 
 
-// IMPORTANT: Raw body parser for Stripe webhooks must come BEFORE json parsapp.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
+// IMPORTANT: Raw body parser for Stripe webhooks must come BEFORE json parser
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
 // Regular JSON parsing for all other routes
 app.use(express.json())
