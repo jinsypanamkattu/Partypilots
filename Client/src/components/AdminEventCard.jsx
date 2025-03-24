@@ -34,11 +34,8 @@ const AdminEventCard = ({ event, onEdit, index, onToggleActive, onCancel }) => {
                         {event.state === 'active' ? 'Deactivate' : 'Activate'}
                     </button>
 
-                    {event.status !== 'Cancelled' && (
-                        <button className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700" onClick={() => onCancel(event)}>
-                            Cancel Event
-                        </button>
-                    )}
+
+                    
                 </div>
             </td>
         </tr>
