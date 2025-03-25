@@ -19,55 +19,64 @@ function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMsg(null); // Reset error message on new login attempt
+        
         if (!email || !password || !role) {
             setErrorMsg('Please enter email, password, and select a role');
-        } else {
-            try {
-                // Dispatch the login action
-                // console.log("details lo",email,password,role);
-                const resultAction = await dispatch(loginUser({ email, password, role }));
-                //console.log('resultAction', resultAction);
+            return;
+        }
 
-                if (loginUser.fulfilled.match(resultAction)) {
-                    const { user } = resultAction.payload || {};
-                    const userRole = user?.role?.trim().toLowerCase(); // Normalize role
+        try {
+            const resultAction = await dispatch(loginUser({ email, password, role }));
 
-                    if (!userRole) {
-                        setErrorMsg('User role is missing. Please try again.');
-                        return;
-                    }
-                
-                    switch (userRole) {
-                        case 'admin':
-                            navigate('/dashboard/admin');
-                            break;
-                        case 'organizer':
-                            navigate('/dashboard/organizer');
-                            break;
-                        case 'attendee':
-                            navigate('/profile');
-                            break;
-                        default:
-                            setErrorMsg('Invalid role, please try again.');
-                    }
-                    
-                } else {
-                    // Handle errors
-                    const error = resultAction?.payload?.error;
-                    if (error) {
-                        // If the error is an object, extract the message or use JSON.stringify for debugging
-                        const errorMessage = error.message || 'Unknown error occurred';
-                        setErrorMsg(errorMessage);
-                    } else {
-                        setErrorMsg('Login failed. Please try again.');
-                    }
+            if (loginUser.fulfilled.match(resultAction)) {
+                const { user } = resultAction.payload || {};
+                const userRole = user?.role?.trim().toLowerCase(); // Normalize role
+
+                if (!userRole) {
+                    setErrorMsg('User role is missing. Please try again.');
+                    return;
                 }
-            } catch (err) {
-                // Check if the error is an object, otherwise display the string message
-                const errorMessage = err?.message || JSON.stringify(err);
+            
+                // Safe navigation with clear role mapping
+                const roleRoutes = {
+                    'admin': '/dashboard/admin',
+                    'organizer': '/dashboard/organizer',
+                    'attendee': '/profile'
+                };
+
+                const destinationRoute = roleRoutes[userRole];
+                
+                if (destinationRoute) {
+                    navigate(destinationRoute);
+                } else {
+                    setErrorMsg('Invalid role, please try again.');
+                }
+                
+            } else {
+                // Improved error handling
+                const error = resultAction.payload?.error;
+                
+                // Check if error is an object and convert appropriately
+                const errorMessage = 
+                    error 
+                    ? (typeof error === 'object' 
+                        ? (error.message || JSON.stringify(error)) 
+                        : error)
+                    : 'Login failed. Please try again.';
+                
                 setErrorMsg(errorMessage);
-                console.error('Login failed:', err);
             }
+        } catch (err) {
+            // Comprehensive error catching
+            console.error('Login error:', err);
+            
+            const errorMessage = 
+                err.message || 
+                (typeof err === 'object' 
+                    ? JSON.stringify(err) 
+                    : 'An unexpected error occurred');
+            
+            setErrorMsg(errorMessage);
         }
     };
 
