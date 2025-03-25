@@ -1,6 +1,6 @@
 // userService.js
 
-
+/*
 export const updateUserProfileTest = async (formData) => {
     try {
         const response = await axios.put('/api/users/profile', formData, {
@@ -14,10 +14,11 @@ export const updateUserProfileTest = async (formData) => {
         throw error;
     }
 };
-
+*/
 // EditProfileForm.js
 import { useState } from "react";
 import { updateUser } from '../services/manageUserService';
+import getUserIdFromToken from "../utility/auth";
 
 export function EditProfileForm({ user, onProfileUpdate }) {
     //console.log("edit",user);
@@ -62,7 +63,8 @@ export function EditProfileForm({ user, onProfileUpdate }) {
         }
 
         try {
-            await updateUser(user?._id || '', formDataToSend);
+            const userId = user?._id || getUserIdFromToken();
+            await updateUser(userId || '', formDataToSend);
             onProfileUpdate(); // Trigger success message
         } catch (error) {
             alert("Failed to update profile");
