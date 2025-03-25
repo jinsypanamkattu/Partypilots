@@ -1,31 +1,25 @@
 const express = require("express");
 require('dotenv').config();
 const cors = require("cors");
-
+const paymentController = require("./controllers/paymentController");
 const connectDB = require("./config/db");
 connectDB();
+
 
 const app = express();
 const PORT = process.env.PORT || 5005;
 
 
 // IMPORTANT: Raw body parser for Stripe webhooks must come BEFORE json parser
-//app.post('/api/payments/webhook', express.raw({ type: 'application/json' }));
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }));
 
-
-// Middleware to handle Stripe webhooks with raw body
-const stripeWebhookMiddleware = (req, res, next) => {
-    if (req.path === '/api/payments/webhook') {
-      express.raw({ type: 'application/json' })(req, res, next);
-    } else {
-      express.json()(req, res, next);
-    }
-  };
-  
-  app.use(stripeWebhookMiddleware);
+app.post('/api/payments/webhook', 
+    express.raw({ type: 'application/json' }), 
+    paymentController.confirmPayment
+);
 
 // Regular JSON parsing for all other routes
-//app.use(express.json())
+app.use(express.json())
 // Middlewareapp.use(express.json())
 app.use(cors());
 
