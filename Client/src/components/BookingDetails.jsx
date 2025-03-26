@@ -27,6 +27,7 @@ export function BookingDetails({ userId }) {
     const [successMessage, setSuccessMessage] = useState(""); // State for success message
 
     useEffect(() => {
+        console.log("User",userId);
         if (userId) {
             dispatch(fetchUserBookings(userId));
         }
