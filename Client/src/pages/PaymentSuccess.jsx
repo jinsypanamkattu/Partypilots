@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSearchParams, Link } from 'react-router-dom';
-
+import getUserIdFromToken from '../utility/auth';
 const PaymentSuccess = () => {
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
-
+  const userId = getUserIdFromToken();
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
@@ -46,7 +46,7 @@ const PaymentSuccess = () => {
         {/* Action Buttons */}
         <div className="space-y-4">
             <Link
-                to="/profile?tab=bookings"
+                to={`/profile?tab=bookings${userId ? `&userId=${userId}` : ''}`}
                 className="block w-full py-3 text-lg font-semibold text-white rounded-lg transition-all duration-300 bg-gradient-to-r from-turquoise-400 to-green-500 hover:from-turquoise-500 hover:to-green-600 shadow-md transform hover:scale-105"
             >
                 View My Tickets
