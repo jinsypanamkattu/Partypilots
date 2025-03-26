@@ -25,6 +25,7 @@ export default function UserProfile() {
     };
 
     const effectiveUserId = user?._id || getUserIdParamsFromURL();
+    console.log(effectiveUserId,"userid");
 
     const [activeTab, setActiveTab] = useState(getTabFromURL());
     const [successMessage, setSuccessMessage] = useState('');
