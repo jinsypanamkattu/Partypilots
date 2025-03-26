@@ -17,6 +17,14 @@ export default function UserProfile() {
         const params = new URLSearchParams(location.search);
         return params.get('tab') || 'profile';
     };
+    // Get tab and userId from URL query parameters
+    const getUserIdParamsFromURL = () => {
+        const params = new URLSearchParams(location.search);
+        return  params.get('userId') || null
+
+    };
+
+    const effectiveUserId = user?._id || getUserIdParamsFromURL();
 
     const [activeTab, setActiveTab] = useState(getTabFromURL());
     const [successMessage, setSuccessMessage] = useState('');
@@ -86,7 +94,7 @@ export default function UserProfile() {
 
                 <Box p={3}>
                     {activeTab === 'profile' && <EditProfileForm user={user} onProfileUpdate={handleProfileUpdate} />}
-                    {activeTab === 'bookings' && <BookingDetails userId={user?._id} />}
+                    {activeTab === 'bookings' && <BookingDetails userId={effectiveUserId} />}
                 </Box>
             </Paper>
         </Container>
