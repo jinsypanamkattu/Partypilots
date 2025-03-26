@@ -44,78 +44,120 @@ exports.createPayment = async (req, res) => {
 };
 
 exports.confirmPayment = async (req, res) => {
-    console.log("Entered confirmPayment webhook");
-    console.log("Headers:", req.headers);
-    //console.log("Raw Body:", req.rawBody ? req.rawBody.toString() : "No raw body");
-    console.log("Body is Buffer:", Buffer.isBuffer(req.body));
-    console.log("Body length:", req.body ? req.body.length : 0);
-
+    console.log("\n===== 🔍 STRIPE WEBHOOK RECEIVED =====");
+    
     const sig = req.headers["stripe-signature"];
+    
     if (!sig) {
-        console.error("No stripe-signature header found");
+        console.error("❌ NO STRIPE SIGNATURE HEADER");
         return res.status(400).send("Missing stripe-signature header");
     }
 
     try {
-        //const event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
-        // Use req.body directly since it's a raw buffer when using express.raw middleware
-        const event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-        console.log("Webhook event verified:", event.type);
+        const event = stripe.webhooks.constructEvent(
+            req.body,  // Use req.body directly - it's now a raw buffer
+            sig, 
+            process.env.STRIPE_WEBHOOK_SECRET
+        );
 
-        // Handle both payment_intent.succeeded and charge.succeeded
-        if (event.type === "payment_intent.succeeded" || event.type === "charge.succeeded") {
-            const paymentIntent = event.type === "payment_intent.succeeded" 
-                ? event.data.object 
-                : event.data.object.payment_intent; // For charge.succeeded, fetch the payment_intent ID
+        console.log("✅ WEBHOOK VERIFIED");
+        console.log("Event Type:", event.type);
 
-            const paymentIntentId = typeof paymentIntent === 'string' 
-                ? paymentIntent 
-                : paymentIntent.id; // Handle case where payment_intent is just the ID
+        // Debugging: Log full event data
+        console.log("Full Event Data:", JSON.stringify(event.data, null, 2));
 
-            console.log("PaymentIntent ID:", paymentIntentId);
+        const handlePaymentSuccess = async (paymentIntentId, amount) => {
+            console.log(`🔍 Searching for Payment with Intent ID: ${paymentIntentId}`);
 
-            // Fetch full payment intent if only ID is provided (from charge.succeeded)
-            const fullPaymentIntent = typeof paymentIntent === 'string' 
-                ? await stripe.paymentIntents.retrieve(paymentIntentId) 
-                : paymentIntent;
-            console.log("Full PaymentIntent:", fullPaymentIntent);
+            // List all payments to debug
+            const allPayments = await Payment.find({});
+            console.log("All Existing Payments:", allPayments.map(p => ({
+                paymentIntentId: p.paymentIntentId,
+                bookingId: p.bookingId,
+                status: p.status
+            })));
 
-            // Update Payment status in DB
-            const payment = await Payment.findOneAndUpdate(
-                { paymentIntentId: paymentIntentId },
-                { status: "Completed" },
-                { new: true }
-            );
-            console.log("Updated Payment:", payment);
+            // Try to find payment with matching intent ID
+            const payment = await Payment.findOne({ paymentIntentId });
 
-            if (!payment) {
-                console.error("No Payment found for paymentIntentId:", paymentIntentId);
-                return res.status(404).send("Payment not found");
+            if (payment) {
+                console.log("✅ Payment Found:", payment);
+
+                // Update Payment Status
+                const updatedPayment = await Payment.findOneAndUpdate(
+                    { paymentIntentId },
+                    { 
+                        status: "Completed", 
+                        amount: amount 
+                    },
+                    { new: true }
+                );
+
+                // Update Booking Status
+                const updatedBooking = await Booking.findByIdAndUpdate(
+                    payment.bookingId,
+                    { bookingStatus: "Confirmed" },
+                    { new: true }
+                );
+
+                console.log("Updated Payment:", updatedPayment);
+                console.log("Updated Booking:", updatedBooking);
+            } else {
+                console.warn(`⚠️ No Payment found for Intent ID: ${paymentIntentId}`);
+                
+                // Optional: Create a new payment record if not found
+                const newPayment = new Payment({
+                    paymentIntentId,
+                    amount: amount / 100,
+                    status: "Completed",
+                    paymentMethod: 'stripe',
+                    currency: 'usd'
+                });
+
+                await newPayment.save();
+                console.log("Created New Payment Record:", newPayment);
             }
+        };
 
-            // Update Booking status
-            const booking = await Booking.findByIdAndUpdate(
-                payment.bookingId,
-                { bookingStatus: "Confirmed" },
-                { new: true }
-            );
-            console.log("Updated Booking:", booking);
+        // Comprehensive event handling
+        switch (event.type) {
+            case 'payment_intent.succeeded':
+                await handlePaymentSuccess(
+                    event.data.object.id, 
+                    event.data.object.amount
+                );
+                break;
+            
+            case 'charge.succeeded':
+            case 'charge.updated':
+                const chargeObject = event.data.object;
+                if (chargeObject.payment_intent) {
+                    await handlePaymentSuccess(
+                        chargeObject.payment_intent, 
+                        chargeObject.amount
+                    );
+                }
+                break;
 
-            if (!booking) {
-                console.warn("No Booking found for bookingId:", payment.bookingId);
-            }
+            case 'payment_intent.created':
+                console.log("Payment Intent Created. Waiting for completion.");
+                break;
 
-            return res.status(200).json({ message: "Payment successful" });
-        } else {
-            console.log("Unhandled event type:", event.type);
-            return res.status(200).send("Event received but not handled");
+            default:
+                console.log(`Unhandled event type: ${event.type}`);
         }
+
+        res.status(200).send("Webhook processed successfully");
+
     } catch (err) {
-        console.error("Webhook error:", err.message);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        console.error("❌ WEBHOOK PROCESSING ERROR:", {
+            message: err.message,
+            stack: err.stack
+        });
+
+        res.status(400).send(`Webhook Error: ${err.message}`);
     }
 };
-
 
 
 // Endpoint to fetch payments for the admin dashboard
